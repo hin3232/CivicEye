@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <title>CivicEye - ارسال البلاغ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(0deg, #7e7d7d 0%, #bebebe 50%, #f5f5f5 100%);
+            min-height: 100vh;
+        }
+       
+
+        @media (max-width: 1200px) {
+            .onesquar, .map-box, .form-section { width: 90%; margin-right: 5%; margin-left: 5%; }
+            .sent-problem { right: 8%; top: 110px; }
+        }
+    </style>
+</head>
+<body class="page-body">
+
+<img src="imags/Frame 3.svg" alt="CivicEye" class="logo">
+
+<a href="home.html" class="page-link">الصفحة الرئيسية</a>
+<div class="page-link page-separator">/</div>
+<a href="edit.html" class="page-link page-current">ارسال البلاغ</a>
+<div class="problem1">
+    <div class="sent-problem">اختر نوع المشكلة</div>
+    <div class="onesquar">
+        <div class="icon-container" data-type="road">
+            <img src="imags/road.png" class="icon" alt="road">
+            <div class="icon-title">الطريق</div>
+        </div>
+        <div class="icon-container" data-type="light">
+            <img src="imags/street-light.png" class="icon" alt="light">
+            <div class="icon-title">إنارة عمومية</div>
+        </div>
+        <div class="icon-container" data-type="trash">
+            <img src="imags/tra.png" class="icon" alt="trash">
+            <div class="icon-title">النفايات</div>
+        </div>
+    </div>
+</div>
+<div class="map-box">
+    <div id="map"></div>
+    <div class="part2"> 
+        <form action="/search" method="get" class="search" onsubmit="return false;"> 
+            <button type="button" id="searchBtn">🔎</button>
+            <input type="text" id="searchInput" placeholder="البحث عن الموقع يدوياً (حي، شارع، مدينة)" name="search">
+        </form>
+        <div><button class="map-controls" id="gpsBtn"> استخدام موقعي (GPS)</button></div>
+    </div>
+</div>
+<div class="form-section">
+    <div class="problem">
+        <label for="problemDescription">وصف المشكلة</label>
+        <div class="problem-textarea-wrapper">
+            <textarea id="problemDescription" 
+                      placeholder="مثال: حفرة عميقة في منتصف الطريق تشكل خطراً على المركبات..." 
+                      maxlength="500"
+                      rows="3"></textarea>
+            <button type="button" class="clear-text-btn" id="clearTextBtn" title="مسح النص">✕</button>
+        </div>
+        <div class="char-counter">
+            <span>📝 عدد الحروف المتبقية:</span>
+            <span id="charCountDisplay">500</span>
+        </div>
+    </div>
+    <div class="upload-box">
+        <label>إضافة صور </label>
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileUpload" accept="image/*" capture="environment" multiple>
+            <span class="upload-icon">📸</span>
+            <span class="upload-text">اختر صور </span>
+        </div>
+        <div class="images-gallery" id="imagesGallery"></div>
+    </div>
+</div>
+<div>
+    <button class="send-btn" id="sendReportBtn"> إرسال البلاغ</button>
+</div>
+
+<script>
+let map;// الخريطة
+let currentMarker = null;//علامة الخريطة
+let selectedProblemType = null;// نوع المشكرة
+let selectedImageFiles = []; //الصورة المحملة
+let selectedPosition = { lat: 34.6728, lng: 3.2630 };// موقع الجلفة عينتها كقيمة اولية 
+const MAX_IMAGES = 4;//العدد الاقصى من الصور المحملة
+
+function initMap() {//دالة انشاء الخريطة
+    //انشئنا خريطة في الكلاس map
+    map = L.map('map').setView([selectedPosition.lat, selectedPosition.lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+    currentMarker = L.marker([selectedPosition.lat, selectedPosition.lng], { draggable: true }).addTo(map);
+    //انشاء ماركر يمكن سحبه 
+    map.on('click', function(e) { //عند الضغظ على الخريطة
+        selectedPosition = { lat: e.latlng.lat, lng: e.latlng.lng }; //يحفظ الموقع المختار
+        currentMarker.setLatLng(e.latlng);
+    });
+}
+
+function setupProblemTypeSelection() { //دالة اختيار نوع المشكلة
+    const icons = document.querySelectorAll('.icon-container'); //يجلب كل الايقونات لي بعنوان هذا الكلاس
+    icons.forEach(icon => {
+        icon.addEventListener('click', function() { // عند الضغظ على نوع المشكلة المختارة
+            icons.forEach(i => i.classList.remove('active')); //حذف التحديد من كل الايقونات
+            this.classList.add('active'); //تحديد العنصر الحالي
+            selectedProblemType = this.getAttribute('data-type'); //جفظ نوع المشكلة بواسطة data-type
+            const problemName = this.querySelector('.icon-title').textContent;//ناخذ اسم نوع المشكلة من خلال icon-title
+            showToast(`✅ تم اختيار: ${problemName}`);
+        });
+    });
+}
+
+function setupProblemDescriptionEnhancements() { //دالة خاصة بحقل وصف المشكلة 
+    const textarea = document.getElementById('problemDescription');//العنصر الذي يحتوي على نص وصف المشكلة
+    const charCountSpan = document.getElementById('charCountDisplay');//العنصر الذي يعرض عدد الحروف المتبقية
+    const clearBtn = document.getElementById('clearTextBtn');//زر مسح
+    const MAX_CHARS = 500;//الحد الأقصى
+    
+    function updateCharCounterAndResize() {//تحديث عداد الحروف وتعديل ارتفاع مربع النص
+        const currentLength = textarea.value.length;//عدد الحروف المكتوبة حاليًا
+        const remaining = MAX_CHARS - currentLength;//عدد الحروف المتبقية
+        charCountSpan.textContent = remaining;
+        if (remaining <= 0) {//إذا نفدت الحروف
+            charCountSpan.classList.add('danger');//لإظهار تحذير باللون الأحمر
+            charCountSpan.classList.remove('warning');
+        } else if (remaining <= 50) {
+            charCountSpan.classList.add('warning');//لإظهار تحذير باللون البرتقالي
+            charCountSpan.classList.remove('danger');
+        } else {
+            charCountSpan.classList.remove('warning', 'danger');//إزالة أي تحذيرات
+        }
+        textarea.style.height = 'auto';//تغيير ارتفاع حقل الكتابة تلقائياً ليتناسب مع محتوى النص
+        let newHeight = Math.min(200, Math.max(82, textarea.scrollHeight));// يحسب الارتفاع الجديد
+        textarea.style.height = newHeight + 'px';// يطبق الارتفاع الجديد
+    }
+    
+    function handleInput(e) {
+        if (textarea.value.length > MAX_CHARS) {
+            textarea.value = textarea.value.substring(0, MAX_CHARS);//يتم قص النص إلى الحد المسموح
+            showToast(`⚠️ لا يمكنك إدخال أكثر من ${MAX_CHARS} حرف`, 2000);
+        }
+        updateCharCounterAndResize();
+    }
+    
+    clearBtn.addEventListener('click', () => {//زر مسح النص
+        if (textarea.value.trim() !== '') {//إذا كان مربع النص يحتوي على نص
+            textarea.value = '';
+            updateCharCounterAndResize();//تحديث العداد
+            textarea.focus();
+            showToast('🧹 تم مسح وصف المشكلة');
+        } else {
+            showToast('الحقل فارغ بالفعل');
+        }
+    });
+    
+    textarea.addEventListener('input', handleInput);//كلما كتب المستخدم في مربع النص أو حذف شيئًايتم استدعاء دالة 
+    textarea.addEventListener('keydown', function(e) {//يتحقق أثناء الضغط على أي مفتاح
+        if (textarea.value.length >= MAX_CHARS && 
+            e.key !== 'Backspace' && e.key !== 'Delete' && 
+            !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();//يتم منع الكتابة
+            showToast(`⚠️ الحد الأقصى ${MAX_CHARS} حرف`, 1500);
+        }
+    });
+    updateCharCounterAndResize();
+}
+
+// عرض معرض الصور باستخدام File Blob URLs
+function renderGallery() {// دالة لعرض الصور المختارة ومساحات فارغة للإضافة
+    const gallery = document.getElementById('imagesGallery');//العنصر الذي يحتوي على كل الصور في الصفحة
+    gallery.innerHTML = '';// تفريغ الحاوية أولاً
+    for (let i = 0; i < selectedImageFiles.length; i++) {
+        const file = selectedImageFiles[i];//مصفوفة الملفات التي اختارها المستخدم
+        const imageUrl = URL.createObjectURL(file);//ينشئ رابط مؤقت للملف يمكن عرضه كصورة في المتصفح
+        const imageCard = document.createElement('div');//يتم إنشاء عنصر
+        imageCard.className = 'image-card';
+        imageCard.innerHTML = `
+            <img src="${imageUrl}" alt="صورة ${i + 1}">
+            <button class="remove-img-btn" data-index="${i}" title="إزالة الصورة">✕</button>
+        `;
+        gallery.appendChild(imageCard);
+        // بعد تحميل الصورة يتم تحرير الرابط المؤقت لتجنب استهلاك الذاكرة الزائد
+        imageCard.querySelector('img').onload = () => URL.revokeObjectURL(imageUrl);
+    }
+    const remainingSlots = MAX_IMAGES - selectedImageFiles.length;//حساب عدد الأماكن المتبقية للصور
+    for (let i = 0; i < remainingSlots; i++) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'image-card-placeholder';
+        placeholder.innerHTML = '<span class="placeholder-text">+</span>';
+        placeholder.addEventListener('click', () => triggerFileUpload());//لفتح نافذة اختيار الملفات
+        gallery.appendChild(placeholder);
+    }
+     // إضافة وظيفة حذف لكل أزرار الحذف التي تم إنشاؤها
+    document.querySelectorAll('.remove-img-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();//لكي لا فتح المستخدم نافذة اختيار ملف بالخطأ
+            const index = parseInt(btn.getAttribute('data-index'));//
+            removeImage(index);//حذف الصورة
+        });
+    });
+}
+
+function removeImage(index) {
+    selectedImageFiles.splice(index, 1);//موضع الصورة التي تريد حذفها في المصفوفة
+    renderGallery();// يعيد رسم المعرض ليصبح بدون هذه الصورة
+    showToast(`🗑️ تم إزالة الصورة`);
+}
+
+function triggerFileUpload() {// دالة لتشغيل نافذة اختيار الملف من النظام
+    if (selectedImageFiles.length >= MAX_IMAGES) {//عدد الصور الحالية في المعرض
+        showToast(`⚠️ لا يمكنك إضافة أكثر من ${MAX_IMAGES} صور`);
+        return;
+    }
+    document.getElementById('fileUpload').click();//قوم بمحاكاة نقرة المستخدم على زر رفع الملفات
+}
+
+function setupMultipleImageUpload() {//إعداد رفع الصور المتعدد
+    const fileInput = document.getElementById('fileUpload');//يسمح للمستخدم باختيار ملفات الصور
+    fileInput.addEventListener('change', function(e) {// عند اختيار ملفات
+        const files = Array.from(e.target.files);//حولها لمصفوفة عادية
+        const availableSlots = MAX_IMAGES - selectedImageFiles.length;//حساب الأماكن المتاحة
+        if (files.length === 0) return;//إذا لم يختَر المستخدم أي ملف، تتوقف الدالة
+        if (files.length > availableSlots) {//إذا اختار المستخدم أكثر من الأماكن المتاحة تظهر رسالة تحذير وتتوقف الدالة
+            showToast(`⚠️ يمكنك إضافة ${availableSlots} صور فقط. تم اختيار ${files.length}`);
+            return;
+        }
+        for (const file of files) {
+            if (!file.type.startsWith('image/')) {//التحقق من أن الملفات صور فقط
+                showToast(`⚠️ الملف "${file.name}" ليس صورة`);
+                return;
+            }
+        }
+        selectedImageFiles.push(...files);//ضافة جميع الملفات الجديدة إلى المصفوفة
+        renderGallery();//إعادة عرض المعرض بعد إضافة الصور
+        showToast(`✅ تم إضافة ${files.length} صور`);
+        fileInput.value = '';//إعادة ضبط عنصر الإدخال لكي يستطيع المستخدم اختيار نفس الملفات مرة أخرى إذا أراد
+    });
+}
+
+function setupAutocomplete() {//خاصية الإكمال التلقائي  لمربع البحث
+    const input = document.getElementById("searchInput");
+    input.addEventListener("input", function() {
+        const query = input.value.trim();//يزيل المسافات الزائدة حول النص (trim())
+        if (query.length < 3) return;//إذا كان طول النص أقل من 3 أحرف، لا يتم البحث بعد
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&addressdetails=1&limit=5`)//إرسال الطلب إلى OpenStreetMap
+            .then(res => res.json())
+            .then(data => {
+                const old = document.getElementById("resultsList");
+                if (old) old.remove();//إذا كان هناك قائمة نتائج موجودة من البحث السابق يتم حذفها أولًا قبل إنشاء جديدة
+                if (data.length === 0) return;//إذا لم يجد السيرفر أي مكان مطابق لا يعرض أي شيء
+                const list = document.createElement("div");
+                list.id = "resultsList";//css
+                list.style.background = "#fff";
+                list.style.border = "1px solid #ccc";
+                list.style.borderRadius = "10px";
+                list.style.marginTop = "10px";
+                list.style.maxHeight = "150px";
+                list.style.overflowY = "auto";
+                list.style.width = "260px";
+                list.style.position = "absolute";
+                list.style.zIndex = "1000";
+                data.forEach(place => {//نفّذ الكود التالي لكل عنصر في المصفوفة
+                    const name = place.display_name;
+                    const item = document.createElement("div");//إنشاء عنصر لكل نتيجة
+                    item.style.padding = "8px";
+                    item.style.cursor = "pointer";
+                    item.style.borderBottom = "1px solid #eee";
+                    item.textContent = name;//وضع اسم المكان في العنصر
+                    item.onclick = () => {//ضافة وظيفة النقر على العنصر
+                        const lat = parseFloat(place.lat);//استخراج الإحداثيات
+                        const lng = parseFloat(place.lon);//استخراج الإحداثيات
+                        selectedPosition = { lat, lng };//حفظ الموقع المختار
+                        map.setView([lat, lng], 16);//تحريك الخريطة إلى المكان
+                        currentMarker.setLatLng([lat, lng]);
+                        currentMarker.bindPopup(`📍 ${name}`).openPopup();//إضافة نافذة منبثقة للعلامة
+                        list.remove();//إزالة قائمة الاقتراحات
+                        input.value = name;//يظهر النص المختار في مربع البحث ليعرف المستخدم أنه تم الاختيار
+                    };
+                    list.appendChild(item);
+                });
+                const searchDiv = document.querySelector(".search");
+                searchDiv.style.position = "relative";//بدون هذا قد تظهر قائمة الاقتراحات في مكان غريب على الصفحة
+                searchDiv.appendChild(list);//تظهر قائمة الاقتراحات تحت مربع البحث مباشرة
+            })
+            .catch(() => showToast("⚠️ خطأ في الاتصال بالإنترنت"));
+    });
+}
+
+function searchLocation() {//البحث عن موقع محدد على الخريطة
+    const query = document.getElementById("searchInput").value.trim();//أخذ النص ويزيل الفراغات من البداية والنهاية
+    if (!query) return;
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`)//إرسال طلب البحث إلى OpenStreetMap
+        .then(res => res.json())
+        .then(data => {
+            if (data.length === 0) {
+                showToast("لم يتم العثور على الموقع");
+                return;
+            }
+            const lat = parseFloat(data[0].lat);
+            const lng = parseFloat(data[0].lon);
+            const name = data[0].display_name;
+            selectedPosition = { lat, lng };
+            map.setView([lat, lng], 16);//تحريك الخريطة لمركز الإحداثيات
+            currentMarker.setLatLng([lat, lng]);//نقل العلامة
+            currentMarker.bindPopup(`📍 ${name}`).openPopup();
+        })
+        .catch(() => showToast("خطأ في البحث"));
+}
+
+function getUserLocation() {
+    if (!navigator.geolocation) {//أو لا يدعم GPS
+        showToast("المتصفح لا يدعم تحديد الموقع");
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(//طلب من المتصفح تحديد موقع المستخدم
+        (pos) => {
+            const { latitude, longitude } = pos.coords;
+            selectedPosition = { lat: latitude, lng: longitude };
+            map.setView([latitude, longitude], 15);
+            currentMarker.setLatLng([latitude, longitude]);
+            showToast("تم تحديد موقعك بنجاح");
+        },
+        () => showToast("تعذر تحديد الموقع، تأكد من تشغيل GPS")
+    );
+}
+
+function showToast(msg, duration = 3000) {//دالة عرض الإشعارات
+    const toast = document.createElement("div");
+    toast.className = "toast-msg";
+    toast.textContent = msg;//الرسالة التي اريد عرضها
+    document.body.appendChild(toast);//يصبح الإشعار مرئيًا للمستخدم
+    setTimeout(() => toast.remove(), duration);//إزالة الإشعار تلقائيًا بعد مدة معينة
+}
+
+async function sendReport() {//دالة إرسال البلاغ 
+    // --- التحقق من صحة البيانات قبل الإرسال ---
+    if (!selectedProblemType) {//// التأكد من اختيار نوع المشكلة
+        showToast("⚠️ الرجاء اختيار نوع المشكلة أولاً");
+        return;
+    }
+    const description = document.getElementById('problemDescription').value.trim();
+    if (!description) { // التأكد من كتابة وصف
+        showToast("⚠️ الرجاء إدخال وصف للمشكلة");
+        return;
+    }
+
+    const formData = new FormData(); //لإنشاء حزمة بيانات يمكن إرسالها عبر POST
+    formData.append('problemType', selectedProblemType);
+    formData.append('problemTypeName', document.querySelector('.icon-container.active .icon-title')?.textContent || '');// الاسم النصي لنوع المشكلة
+    formData.append('description', description);//الوصف
+    formData.append('latitude', selectedPosition.lat);// احداثيات الطول و العرض
+    formData.append('longitude', selectedPosition.lng);
+    formData.append('address', document.getElementById('searchInput').value || 'لم يتم تحديد عنوان');//عنوان الموقع الذي أدخله المستخدم
+    formData.append('timestamp', new Date().toISOString());//,وقت الارسال
+    
+    // إضافة الملفات (الصور) إلى FormData
+    for (let i = 0; i < selectedImageFiles.length; i++) {
+        formData.append('images', selectedImageFiles[i]);
+    }
+
+    // عرض حالة التحميل
+    const sendBtn = document.getElementById('sendReportBtn');//هو زر الإرسال على الصفحة
+    const originalText = sendBtn.textContent;//يخزن النص الأصلي للزر لكي نعيده بعد الإرسال
+    sendBtn.textContent = 'جاري الإرسال...';
+    sendBtn.disabled = true;//يمنع المستخدم من الضغط مرة أخرى أثناء الإرسال
+
+    try {
+      
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        //حفظ نسخة احتياطية
+        const reportDataForStorage = {
+            id: Date.now(),
+            problemType: selectedProblemType,
+            problemTypeName: document.querySelector('.icon-container.active .icon-title')?.textContent || '',
+            description: description,
+            location: selectedPosition,
+            address: document.getElementById('searchInput').value || 'لم يتم تحديد عنوان',
+            timestamp: new Date().toISOString(),
+            imagesCount: selectedImageFiles.length,
+            // لا نخزن Base64 للصور هنا لتجنب تخزين ضخم، نخزن فقط عدد الصور، يمكن لـ API التعامل مع الملفات
+            imageFileNames: selectedImageFiles.map(f => f.name)
+        };
+        let reports = JSON.parse(sessionStorage.getItem('civicEye_reports') || '[]');
+        reports.push(reportDataForStorage);
+        sessionStorage.setItem('civicEye_reports', JSON.stringify(reports));
+        
+        showToast(`✅ تم إرسال البلاغ بنجاح! (${selectedImageFiles.length} صور)`);
+        console.log('تم إرسال البلاغ (FormData):', {
+            problemType: selectedProblemType,
+            description,
+            location: selectedPosition,
+            imagesCount: selectedImageFiles.length
+        });
+        
+        // إعادة تعيين النموذج بعد الإرسال
+        setTimeout(() => {
+            selectedProblemType = null;
+            document.querySelectorAll('.icon-container').forEach(i => i.classList.remove('active'));//إزالة تحديد نوع المشكلة
+            document.getElementById('problemDescription').value = '';
+            selectedImageFiles = [];//مسح الصور وإعادة عرض المعرض فارغًا
+            renderGallery();
+            const textarea = document.getElementById('problemDescription');
+            if (textarea) {
+                const event = new Event('input', { bubbles: true });
+                textarea.dispatchEvent(event);
+            }
+            showToast("✨ يمكنك إرسال بلاغ جديد");
+        }, 1500);
+        
+    } catch (error) {//يلتقط أي خطأ أثناء الإرسال
+        console.error('خطأ في الإرسال:', error);
+        showToast("❌ فشل إرسال البلاغ، يرجى المحاولة مرة أخرى");
+    } finally {
+        sendBtn.textContent = originalText;
+        sendBtn.disabled = false;
+    }
+}
+
+function setupEventListeners() {//ربط الأزرار والأحداث 
+     // ربط دالة GPS بزر GPS
+    document.getElementById('gpsBtn').addEventListener('click', getUserLocation);
+     // ربط دالة البحث بزر البحث
+    document.getElementById('searchBtn').addEventListener('click', searchLocation);
+     // ربط دالة الإرسال بزر الإرسال
+    document.getElementById('sendReportBtn').addEventListener('click', sendReport);
+    //جعل الضغط على "Enter" في حقل البحث ينفذ البحث
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchLocation();
+        }
+    });
+}
+
+window.onload = () => {// يضمن أن كل عناصر الصفحة جاهزة قبل أن نبدأ التعامل معها
+    initMap();//تستدعي الدالة التي تقوم بإنشاء وعرض الخريطة على الصفحة
+    setupProblemTypeSelection();//تفعّل خاصية اختيار نوع المشكلة
+    setupProblemDescriptionEnhancements();//تجهز حقل وصف المشكلة
+    setupEventListeners();//تربط الأزرار الموجودة في الصفحة بالدوال المناسبة
+    setupAutocomplete();// تفعّل خاصية الإكمال التلقائي
+    setupMultipleImageUpload();//تجهز خاصية رفع الصور
+    renderGallery();//عرض معرض الصور في الواجهة
+    showToast("مرحباً!كيف يمكننا مساعدتك؟");
+};
+</script>
+</body>
+</html>
