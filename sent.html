@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-    
+    <link rel="stylesheet" href="style.css">
     <title>CivicEye - ارسال البلاغ</title>
     
     <style>
@@ -25,331 +25,7 @@
             min-height: 100vh;
             padding: 20px;
         }
-        
-        .logo {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 80px;
-            z-index: 100;
-        }
-        
-        .page-link {
-            position: absolute;
-            top: 30px;
-            left: 20px;
-            text-decoration: none;
-            color: #2c3e50;
-            font-weight: bold;
-        }
-        
-        .page-separator {
-            left: 120px;
-        }
-        
-        .page-current {
-            left: 140px;
-            color: #f9753d;
-        }
-        
-        .problem1 {
-            margin-top: 80px;
-            text-align: center;
-        }
-        
-        .sent-problem {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-        
-        .onesquar {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
-        }
-        
-        .icon-container {
-            text-align: center;
-            cursor: pointer;
-            padding: 15px;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .icon-container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        }
-        
-        .icon-container.active {
-            background: #f9753d;
-            color: white;
-            transform: scale(1.05);
-        }
-        
-        .icon {
-            width: 60px;
-            height: 60px;
-        }
-        
-        .icon-title {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        
-        .map-box {
-            width: 90%;
-            max-width: 800px;
-            margin: 20px auto;
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-        
-        #map {
-            height: 300px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .part2 {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .search {
-            display: flex;
-            flex: 1;
-            position: relative;
-        }
-        
-        .search input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        .search button {
-            padding: 10px 15px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .map-controls {
-            padding: 10px 20px;
-            background: #2ecc71;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .form-section {
-            width: 90%;
-            max-width: 800px;
-            margin: 20px auto;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-        }
-        
-        .problem label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #2c3e50;
-        }
-        
-        .problem-textarea-wrapper {
-            position: relative;
-        }
-        
-        .problem-textarea-wrapper textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            resize: vertical;
-        }
-        
-        .clear-text-btn {
-            position: absolute;
-            left: 10px;
-            top: 10px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .char-counter {
-            margin-top: 5px;
-            font-size: 12px;
-            color: #7f8c8d;
-        }
-        
-        .char-counter .warning {
-            color: #f39c12;
-        }
-        
-        .char-counter .danger {
-            color: #e74c3c;
-        }
-        
-        .upload-box {
-            margin-top: 20px;
-        }
-        
-        .upload-box label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #2c3e50;
-        }
-        
-        .upload-area {
-            border: 2px dashed #3498db;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .upload-area:hover {
-            background: #ecf0f1;
-        }
-        
-        .upload-icon {
-            font-size: 30px;
-            display: block;
-        }
-        
-        .upload-text {
-            display: block;
-            margin-top: 10px;
-            color: #7f8c8d;
-        }
-        
-        #fileUpload {
-            display: none;
-        }
-        
-        .images-gallery {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-        
-        .image-card {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .image-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .remove-img-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .image-card-placeholder {
-            width: 100px;
-            height: 100px;
-            border: 2px dashed #bdc3c7;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .image-card-placeholder:hover {
-            border-color: #3498db;
-            background: #ecf0f1;
-        }
-        
-        .placeholder-text {
-            font-size: 30px;
-            color: #bdc3c7;
-        }
-        
-        .send-btn {
-            display: block;
-            width: 200px;
-            margin: 20px auto;
-            padding: 15px;
-            background: #f9753d;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .send-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(249, 117, 61, 0.3);
-        }
-        
-        .send-btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-        
-        .toast-msg {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #2c3e50;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 10px;
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
+
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -376,29 +52,7 @@
             }
         }
         
-        /* قائمة نتائج البحث */
-        #resultsList {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-        
-        #resultsList div {
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-        
-        #resultsList div:hover {
-            background: #ecf0f1;
-        }
+    
     </style>
 </head>
 <body>
@@ -470,7 +124,7 @@
 
 <script>
 // ======================== التكوين والإعدادات ========================
-const API_BASE_URL = 'https://api.civiceye.com/v1'; // غيّر هذا إلى رابط API الحقيقي
+const API_BASE_URL = 'https://api.civiceye.com/v1'; ////شي يخص API
 
 // ======================== المتغيرات العامة ========================
 let map;                    // الخريطة
@@ -479,14 +133,12 @@ let selectedProblemType = null;  // نوع المشكلة
 let selectedImageFiles = [];      // الصور المحملة
 let selectedPosition = { lat: 34.6728, lng: 3.2630 };  // موقع الجلفة كقيمة اولية
 const MAX_IMAGES = 4;       // العدد الاقصى من الصور
-let currentUser = null;     // المستخدم الحالي
-let authToken = null;       // توكن المصادقة
+   
 
 // ======================== دوال المصادقة ========================
 
-/**
- * التحقق من وجود مستخدم مسجل الدخول
- */
+// التحقق من وجود مستخدم مسجل الدخول
+ // باش لي يرسل البلاغ مايكونش شخص مجهول
 function checkAuthentication() {
     try {
         // محاولة جلب التوكن من localStorage
@@ -499,7 +151,7 @@ function checkAuthentication() {
         }
         
         currentUser = JSON.parse(userStr);
-        
+        //كي توجدي APIشوفي اذا تسحقي ذا الجزء ام لا
         // التحقق من صحة التوكن مع API (اختياري لكن يفضل)
         // يمكن تفعيل هذا الجزء عندما يكون API جاهزاً
         /*
@@ -551,10 +203,7 @@ async function sendReportToAPI(formData) {
         
         const response = await fetch(`${API_BASE_URL}/reports`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-                // لا نضع 'Content-Type' مع FormData، المتصفح سيضعها تلقائياً مع الـ boundary
-            },
+            headers: {},
             body: formData
         });
         
@@ -608,6 +257,7 @@ async function sendReportToAPI(formData) {
 /**
  * حفظ نسخة محلية كاحتياطي (عند فشل الاتصال بالخادم)
  */
+//مثلا كي يكون المستخدم ماعندوش الانترنت بصح دار البلاغ كي يتصل بالانترنت مايعاودش يكتبو
 function saveReportLocally(reportData) {
     try {
         let reports = JSON.parse(localStorage.getItem('civicEye_reports_offline') || '[]');
@@ -629,7 +279,7 @@ function saveReportLocally(reportData) {
 // ======================== دوال الخريطة ========================
 
 function initMap() {
-    map = L.map('map').setView([selectedPosition.lat, selectedPosition.lng], 15);
+    map = L.map('map').setView([selectedPosition.lat, selectedPosition.lng], 15);//انشاء الخريطة في الكلاس ذي
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
@@ -652,11 +302,11 @@ function initMap() {
 
 // ======================== دوال واجهة المستخدم ========================
 
-function setupProblemTypeSelection() {
+function setupProblemTypeSelection() {//اختيار نوع المشكلة 
     const icons = document.querySelectorAll('.icon-container');
     icons.forEach(icon => {
         icon.addEventListener('click', function() {
-            icons.forEach(i => i.classList.remove('active'));
+            icons.forEach(i => i.classList.remove('active'));//ينزع التحديد من كل الاختيارات و تبقى وحدة
             this.classList.add('active');
             selectedProblemType = this.getAttribute('data-type');
             const problemName = this.querySelector('.icon-title').textContent;
@@ -665,15 +315,15 @@ function setupProblemTypeSelection() {
     });
 }
 
-function setupProblemDescriptionEnhancements() {
-    const textarea = document.getElementById('problemDescription');
-    const charCountSpan = document.getElementById('charCountDisplay');
-    const clearBtn = document.getElementById('clearTextBtn');
-    const MAX_CHARS = 500;
+function setupProblemDescriptionEnhancements() {// دالة تخص جزء وصف المشكلة 
+    const textarea = document.getElementById('problemDescription');// المربع لي يتكتب فيه النص
+    const charCountSpan = document.getElementById('charCountDisplay');//عداد النص
+    const clearBtn = document.getElementById('clearTextBtn');// زر المسح
+    const MAX_CHARS = 500;// اقصى عدد الاحرف المسموح به 
     
-    function updateCharCounterAndResize() {
+    function updateCharCounterAndResize() {//دالة المسؤولة عن تحديث العداد
         const currentLength = textarea.value.length;
-        const remaining = MAX_CHARS - currentLength;
+        const remaining = MAX_CHARS - currentLength;// العدد المتبقي من احرووف
         charCountSpan.textContent = remaining;
         
         if (remaining <= 0) {
@@ -686,17 +336,17 @@ function setupProblemDescriptionEnhancements() {
             charCountSpan.classList.remove('warning', 'danger');
         }
         
-        textarea.style.height = 'auto';
+        textarea.style.height = 'auto';//تحديث تلقائي في طول المربع لي نكتبو فيه 
         let newHeight = Math.min(200, Math.max(82, textarea.scrollHeight));
         textarea.style.height = newHeight + 'px';
     }
     
-    function handleInput(e) {
+    function handleInput(e) {// دالة مسؤولة واش يصرا اذا فات الحد المسموح به من الاحرف
         if (textarea.value.length > MAX_CHARS) {
             textarea.value = textarea.value.substring(0, MAX_CHARS);
             showToast(`⚠️ لا يمكنك إدخال أكثر من ${MAX_CHARS} حرف`, 2000);
         }
-        updateCharCounterAndResize();
+        updateCharCounterAndResize(); //يستدعي الدالة 
     }
     
     clearBtn.addEventListener('click', () => {
@@ -723,8 +373,8 @@ function setupProblemDescriptionEnhancements() {
     updateCharCounterAndResize();
 }
 
-function renderGallery() {
-    const gallery = document.getElementById('imagesGallery');
+function renderGallery() {// دالة تخص الدزء التعلق بالصور
+    const gallery = document.getElementById('imagesGallery');// انشاء متغير لي يحمل الصور قصدي المربع ذاكلي فيه زائد
     gallery.innerHTML = '';
     
     for (let i = 0; i < selectedImageFiles.length; i++) {
@@ -749,7 +399,7 @@ function renderGallery() {
         gallery.appendChild(placeholder);
     }
     
-    document.querySelectorAll('.remove-img-btn').forEach(btn => {
+    document.querySelectorAll('.remove-img-btn').forEach(btn => {// دالة تخص ازالة الصور
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const index = parseInt(btn.getAttribute('data-index'));
@@ -758,13 +408,13 @@ function renderGallery() {
     });
 }
 
-function removeImage(index) {
+function removeImage(index) {// دالة تخص ازالة الصور
     selectedImageFiles.splice(index, 1);
     renderGallery();
     showToast(`🗑️ تم إزالة الصورة`);
 }
 
-function triggerFileUpload() {
+function triggerFileUpload() {// دالة تخص ازالة الصورادا فات عدد الصور اربعة 
     if (selectedImageFiles.length >= MAX_IMAGES) {
         showToast(`⚠️ لا يمكنك إضافة أكثر من ${MAX_IMAGES} صور`);
         return;
@@ -772,7 +422,7 @@ function triggerFileUpload() {
     document.getElementById('fileUpload').click();
 }
 
-function setupMultipleImageUpload() {
+function setupMultipleImageUpload() {// تسمح باضافة شحال من صورة 
     const fileInput = document.getElementById('fileUpload');
     const uploadArea = document.getElementById('uploadArea');
     
@@ -809,7 +459,7 @@ function setupMultipleImageUpload() {
     });
 }
 
-function setupAutocomplete() {
+function setupAutocomplete() {// دالة تخص البحث اليدوي
     const input = document.getElementById("searchInput");
     let debounceTimer;
     
@@ -858,7 +508,7 @@ function setupAutocomplete() {
     });
 }
 
-function searchLocation() {
+function searchLocation() {// دالة المسؤولة عن تحديد البحث اليدوي على الخريطة
     const query = document.getElementById("searchInput").value.trim();
     if (!query) return;
     
@@ -881,7 +531,7 @@ function searchLocation() {
         .catch(() => showToast("خطأ في البحث"));
 }
 
-function getUserLocation() {
+function getUserLocation() { // دالة خص تحديد الموقع عبر جي بي اس
     if (!navigator.geolocation) {
         showToast("المتصفح لا يدعم تحديد الموقع");
         return;
@@ -926,14 +576,7 @@ function showToast(msg, duration = 3000) {
 // ======================== دالة إرسال البلاغ الرئيسية ========================
 
 async function sendReport() {
-    // 1. التحقق من المصادقة أولاً
-    if (!checkAuthentication()) {
-        showToast("⚠️ الرجاء تسجيل الدخول أولاً");
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 1500);
-        return;
-    }
+  
     
     // 2. التحقق من اختيار نوع المشكلة
     if (!selectedProblemType) {
@@ -965,12 +608,7 @@ async function sendReport() {
     formData.append('address', document.getElementById('searchInput').value || 'لم يتم تحديد عنوان');
     formData.append('timestamp', new Date().toISOString());
     
-    // إضافة معلومات المستخدم
-    if (currentUser) {
-        formData.append('userId', currentUser.id || currentUser.identifier);
-        formData.append('userEmail', currentUser.identifier);
-        formData.append('userName', `${currentUser.firstName} ${currentUser.lastName}`);
-    }
+   
     
     // إضافة الصور
     for (let i = 0; i < selectedImageFiles.length; i++) {
@@ -1061,7 +699,7 @@ function resetForm() {
 
 // ======================== إعداد المستمعات ========================
 
-function setupEventListeners() {
+function setupEventListeners() {// ربط كل دالة بالزر المخصص لها 
     document.getElementById('gpsBtn').addEventListener('click', getUserLocation);
     document.getElementById('searchBtn').addEventListener('click', searchLocation);
     document.getElementById('sendReportBtn').addEventListener('click', sendReport);
@@ -1109,29 +747,22 @@ async function syncPendingReports() {
 // ======================== تهيئة الصفحة ========================
 
 window.onload = async () => {
-    // 1. التحقق من المصادقة
-    if (!checkAuthentication()) {
-        showToast("⚠️ الرجاء تسجيل الدخول أولاً");
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 2000);
-        return;
-    }
+   
     
     // 2. تهيئة المكونات
-    initMap();
-    setupProblemTypeSelection();
-    setupProblemDescriptionEnhancements();
-    setupEventListeners();
-    setupAutocomplete();
-    setupMultipleImageUpload();
-    renderGallery();
+    initMap();//دالة تخص للخريظ
+    setupProblemTypeSelection();//دالة تخص نوع المشكلة
+    setupProblemDescriptionEnhancements();//وصف المشكلة 
+    setupEventListeners();//ربط كل دالة بالزر المخصص لها 
+    setupAutocomplete();//البحث
+    setupMultipleImageUpload();//الصور المتعددة
+    renderGallery();//ماذا يحدث عند اختيار صورة محددة
     
     // 3. محاولة مزامنة أي بلاغات معلقة
     await syncPendingReports();
     
     // 4. عرض رسالة ترحيب
-    showToast(`👋 مرحباً ${currentUser?.firstName || ''}! يمكنك إرسال بلاغ جديد`);
+   showToast("👋 يمكنك إرسال بلاغ جديد");
     
     console.log('✅ الصفحة جاهزة، انتظار إرسال البلاغات...');
 };
