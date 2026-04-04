@@ -1,50 +1,306 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-
-<title>CivicEye</title>
-<style>
-body {
-    background: linear-gradient(0deg, #7e7d7d 0%, #bebebe 50%, #f5f5f5 100%);
-    margin: 0;
-    min-height: 100vh;
-}
-.logo{
-   float: left;
-   margin-left: 20px;
-   width: 96%;
-   
-}
-.page{
-    color:#fff;
-    position: absolute;
-    right: 5%;
-    top:5%;
-    font-size: 25px;
-   text-decoration: none;
-}
-.page:hover{
-    color: #f5f5f5;
-    font-size: 26px;
-}
-.square{
-    width: 400px;
-    margin-right: 30%;
-    margin-top: 2%;
-}
-</style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>CivicEye - الرئيسية</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(0deg, #7e7d7d 0%, #bebebe 50%, #f5f5f5 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+    </style>
 </head>
-<body>
-    <div>
-        <div >
-            <img src="imags/Frame 3.svg"alt="CivicEye"class="logo">
-            <a href="home.html"class="page" >الصفحة الرئيسية </a>
-        </div>
-        <div>
-               <img src="imags/Frame .svg" class="square">
+<body class="page-body">
+
+<div>
+    <img src="imags/Frame 3.svg" alt="CivicEye" class="logo">
+    <a href="home.html" class="page-link">الصفحة الرئيسية</a>
+</div>
+
+<div>
+    <img src="imags/Frame .svg" class="home-square" alt="الإطار">
+    <img id="profileImage" src="imags/user.png" class="user" alt="صورة المستخدم">
+<div>
+    <div class="usename" style="top:25%;">الاسم الكامل</div>
+    <div id="userFullName" class="usename" style="top:28%;">تحميل...</div>
+
+    <div class="usename" style="top:32.5%;">البريد الإلكتروني / رقم الهاتف</div>
+    <div id="userIdentifier" class="usename" style="top:35%;">تحميل...</div>
+    <!-- قسم النبذة -->
+    <div class="usename" style="top:38.5%;left:51%;"> نبذة عني</div>
+    <div id="userAbout" class="usename" style="top: 40.5%; left:53.75%;">لا توجد نبذة</div>
+  
+    <a href="edit.html" class="btnedit">تعديل</a>
+</div>
+    <!-- الرسم البياني الجديد - دائرة واحدة -->
+    <div class="stats-container">
+        <div class="single-pie">
+            <div id="pieChart" class="pie-chart" style="background: conic-gradient(#2ecc71 0% 0%, #e0e0e0 0% 100%);">
+                <div class="pie-inner">
+                    <div id="processedCount" class="pie-number">0</div>
+                    <div id="totalCount" class="pie-total">من أصل 0</div>
+                </div>
+            </div>
+            <div class="pie-label">
+                <div>البلاغات المعالجة</div>
+                <div id="percentageText" class="pie-percentage">0%</div>
+            </div>
+            <div id="noReportsMsg" class="no-reports" style="display: none;">لم تقم بإرسال أي بلاغات بعد</div>
         </div>
     </div>
+</div>
+
+<div>
+    <button class="btn" style="background-color: #f9753d;" onclick="location.href='sent.html'">ارسال البلاغ</button>
+</div>
+
+<div>
+    <button class="btn" style="background-color: #3498db;" onclick="location.href='track.html'">تتبع البلاغ</button>
+</div>
+
+<script>
+    // دالة عرض إشعار مؤقت
+    function showUpdateToast(message) {
+        const existingToast = document.querySelector('.update-toast');//يبحث في الصفحة عن أي عنصر لديه الكلاس
+        if (existingToast) existingToast.remove();//إذا وجدنا إشعارًا موجودًانقوم بحذفه مباشرة
+        
+        const toast = document.createElement('div');//ينشئ عنص
+        toast.className = 'update-toast';//يعطيه كلاس
+        toast.textContent = message;//يضع النص المرسل كمعامل داخل الإشعار
+        document.body.appendChild(toast);//يضيف العنصر الجديد إلى صفحة الويب بحيث يظهر للمستخدم.
+        
+        setTimeout(() => {//إزالة الإشعار تلقائيًا بعد 3 ثواني
+            if (toast.parentNode) toast.remove();
+        }, 3000);
+    }
+
+    // دالة تحديث إحصائيات البلاغات من localStorage (نفس المفتاح المستخدم في sent.html)
+    function updateReportStats(user) {//يحتوي على معلومات المستخدم
+        let totalReports = 0;//عدد البلاغات الإجمالي للمستخدم
+        let processedReports = 0;//عدد البلاغات التي تم معالجتها
+        
+        // جلب جميع البلاغات من localStorage باستخدام المفتاح الموحد
+        const allReports = JSON.parse(localStorage.getItem('civicEye_all_reports') || '[]');
+        
+        // تصفية البلاغات الخاصة بالمستخدم الحالي
+        const userReports = allReports.filter(report => report.userIdentifier === user.identifier);
+        
+        totalReports = userReports.length;
+        processedReports = userReports.filter(report => report.status === 'processed' || report.status === 'completed').length;
+        
+        // حفظ الإحصائيات في localStorage للمستخدم الحالي
+        const stats = JSON.parse(localStorage.getItem('user_stats') || '{}');
+        stats[user.identifier] = {
+            totalReports: totalReports,
+            processedReports: processedReports,
+            pendingReports: totalReports - processedReports,
+            lastUpdated: new Date().toISOString()
+        };
+        localStorage.setItem('user_stats', JSON.stringify(stats));
+        
+        // حساب النسبة المئوية
+        const percentage = totalReports > 0 ? Math.round((processedReports / totalReports) * 100) : 0;
+        
+        // تحديث الأرقام المعروضة
+        document.getElementById('processedCount').textContent = processedReports;
+        document.getElementById('totalCount').textContent = `من أصل ${totalReports}`;
+        document.getElementById('percentageText').textContent = `${percentage}%`;
+        
+        // تحديث الرسم البياني (الدائرة)
+        const pieChart = document.getElementById('pieChart');
+        if (totalReports > 0) {
+            const processedPercentage = (processedReports / totalReports) * 100;
+            pieChart.style.background = `conic-gradient(#2ecc71 0% ${processedPercentage}%, #e0e0e0 ${processedPercentage}% 100%)`;
+            document.getElementById('noReportsMsg').style.display = 'none';
+        } else {
+            // إذا لم يكن هناك بلاغات، عرض دائرة فارغة
+            pieChart.style.background = `conic-gradient(#e0e0e0 0% 100%)`;
+            document.getElementById('noReportsMsg').style.display = 'block';
+        }
+        
+        console.log(`تم تحديث الإحصائيات: ${processedReports} من أصل ${totalReports} بلاغ (${percentage}%)`);
+        return { totalReports, processedReports, percentage };
+    }
+    
+    // دالة تحديث الصفحة بالكامل
+    function refreshPageData() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) {
+            // إذا لم يكن هناك مستخدم مسجل، التوجيه إلى صفحة تسجيل الدخول
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // عرض بيانات المستخدم المحدثة
+        const fullName = `${currentUser.firstName} ${currentUser.lastName}`;
+        document.getElementById('userFullName').textContent = fullName;
+        document.getElementById('userIdentifier').textContent = currentUser.identifier;
+        
+        // عرض النبذة
+        const aboutText = document.getElementById('userAbout');
+        if (currentUser.about && currentUser.about.trim() !== '') {
+            aboutText.textContent = currentUser.about;
+            aboutText.style.color = '';
+            aboutText.style.fontStyle = '';
+        } else {
+            aboutText.textContent = '📌 لا توجد نبذة بعد. يمكنك إضافتها من خلال زر تعديل';
+            aboutText.style.color = '#7f8c8d';
+            aboutText.style.fontStyle = 'italic';
+        }
+        
+        // عرض الصورة الشخصية (دائرية)
+        if (currentUser.profileImage && currentUser.profileImage !== 'imags/user.png') {
+            document.getElementById('profileImage').src = currentUser.profileImage;
+        }
+        
+        // تحديث الإحصائيات
+        updateReportStats(currentUser);
+        
+        console.log('مرحباً بك يا ' + fullName);
+    }
+    
+    // دالة لإضافة بلاغ جديد (يمكن استدعاؤها من صفحات أخرى)
+    function addNewReport(reportData) {
+        // حفظ في localStorage باستخدام المفتاح الموحد
+        const allReports = JSON.parse(localStorage.getItem('civicEye_all_reports') || '[]');
+        allReports.push(reportData);
+        localStorage.setItem('civicEye_all_reports', JSON.stringify(allReports));
+        
+        // تحديث الإحصائيات
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser) {
+            updateReportStats(currentUser);
+            showUpdateToast('✅ تم إضافة بلاغ جديد بنجاح');
+        }
+    }
+    
+    // دالة لحذف بلاغ (إذا لزم الأمر)
+    function deleteReport(reportId) {
+        const allReports = JSON.parse(localStorage.getItem('civicEye_all_reports') || '[]');
+        const updatedReports = allReports.filter(report => report.reportId !== reportId);
+        localStorage.setItem('civicEye_all_reports', JSON.stringify(updatedReports));
+        
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser) {
+            updateReportStats(currentUser);
+            showUpdateToast('🗑️ تم حذف البلاغ');
+        }
+    }
+    
+    // دالة لتحديث حالة بلاغ (مثلاً من pending إلى processed)
+    function updateReportStatus(reportId, newStatus) {
+        const allReports = JSON.parse(localStorage.getItem('civicEye_all_reports') || '[]');
+        const reportIndex = allReports.findIndex(report => report.reportId === reportId);
+        
+        if (reportIndex !== -1) {
+            allReports[reportIndex].status = newStatus;
+            localStorage.setItem('civicEye_all_reports', JSON.stringify(allReports));
+            
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                updateReportStats(currentUser);
+                showUpdateToast(`📊 تم تحديث حالة البلاغ إلى: ${newStatus}`);
+            }
+        }
+    }
+    
+    // دالة لاسترجاع جميع بلاغات المستخدم الحالي
+    function getUserReports() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) return [];
+        
+        const allReports = JSON.parse(localStorage.getItem('civicEye_all_reports') || '[]');
+        return allReports.filter(report => report.userIdentifier === currentUser.identifier);
+    }
+    
+    // دالة لاسترجاع بلاغ محدد
+    function getReportById(reportId) {
+        const allReports = JSON.parse(localStorage.getItem('civicEye_all_reports') || '[]');
+        return allReports.find(report => report.reportId === reportId);
+    }
+    
+    // الاستماع لتحديثات الإحصائيات من الصفحات الأخرى (مثل sent.html)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'stats_updated') {
+            console.log('تم استلام إشارة تحديث من صفحة أخرى');
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                // إعادة تحديث البيانات والعرض
+                updateReportStats(currentUser);
+                showUpdateToast('📊 تم تحديث إحصائيات البلاغات');
+            }
+        }
+        
+        // إذا تم تحديث بيانات المستخدم
+        if (e.key === 'currentUser' && e.newValue) {
+            console.log('تم تحديث بيانات المستخدم');
+            refreshPageData();
+            showUpdateToast('👤 تم تحديث بيانات المستخدم');
+        }
+        
+        // إذا تم تحديث البلاغات مباشرة
+        if (e.key === 'civicEye_all_reports') {
+            console.log('تم تحديث قائمة البلاغات');
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                updateReportStats(currentUser);
+            }
+        }
+    });
+    
+    // تحديث الصفحة كل 5 ثوانٍ للتأكد من مزامنة البيانات (اختياري)
+    let autoRefreshInterval = null;
+    
+    function startAutoRefresh() {
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        autoRefreshInterval = setInterval(() => {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                updateReportStats(currentUser);
+            }
+        }, 10000); // كل 10 ثوانٍ
+    }
+    
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+    }
+    
+    // تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        refreshPageData();
+        startAutoRefresh(); // بدء التحديث التلقائي (اختياري)
+        
+        // إيقاف التحديث التلقائي عند مغادرة الصفحة
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+        });
+    });
+    
+    // تصدير الدوال للاستخدام العالمي (إذا لزم الأمر)
+    window.CivicEye = {
+        addNewReport,
+        deleteReport,
+        getUserReports,
+        getReportById,
+        refreshPageData,
+        updateReportStats,
+        updateReportStatus
+    };
+</script>
+
 </body>
 </html>
