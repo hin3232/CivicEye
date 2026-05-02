@@ -62,7 +62,6 @@
             background: #334155; 
             width: 180px;   
         }
-     /* القسم الرئيسي لعرض التبليغات */
      .notifications-section {
             flex: 1;
             background-color: rgb(2, 39, 71);
@@ -90,7 +89,6 @@
             overflow-y: auto;
             padding-left: 8px;
      }
-     /* تنسيق بطاقة البلاغ مطابق لـ Concerned-authorities مع الحفاظ على الستايل */
      .report-item {
             background-color: #f0f4f8;
             padding: 20px;
@@ -192,7 +190,6 @@
             color: white;
             transform: translateX(-5px);
      }
-     /* تنسيق اسم المستخدم + الحالة بجانب بعض (مضاف من صفحة الكهرباء) */
      .user-status-wrapper {
             display: flex;
             align-items: center;
@@ -212,7 +209,6 @@
             border-radius: 30px;
             margin-top: 0;
      }
-     /* حاوية الحالة مع النقطة الملونة */
      .status-container {
             display: inline-flex;
             align-items: center;
@@ -239,12 +235,15 @@
             background-color: #eab308;
             box-shadow: 0 0 0 2px #fef9c3;
      }
+     .status-dot.red {
+            background-color: #ef4444;
+            box-shadow: 0 0 0 2px #fecaca;
+     }
      .status-text {
             font-size: 12px;
             font-weight: 600;
             color: #1e293b;
      }
-     /* قائمة منسدلة صغيرة بجانب الحالة (للتحكم) */
      .status-select {
             background: white;
             border: 1px solid #94a3b8;
@@ -275,7 +274,6 @@
             border-radius: 28px;
             font-weight: 500;
      }
-     /* مودال الصور */
      .modal {
             display: none;
             position: fixed;
@@ -321,7 +319,6 @@
             background: #ef4444;
             transform: scale(1.05);
      }
-     /* شريط التمرير */
      .reports-list::-webkit-scrollbar {
             width: 8px;
      }
@@ -333,7 +330,6 @@
             background: #0ea5e9;
             border-radius: 12px;
      }
-     /* تنسيق بسيط للتصميم المستجيب */
      @media (max-width: 900px) {
             .wrapper { flex-direction: column; }
             .part-1 { width: 100%; min-height: auto; display: flex; gap: 10px; justify-content: center; }
@@ -352,7 +348,6 @@
     <img src="imags/Frame 1.svg" alt="CivicEye" class="logo1" onerror="this.src='https://placehold.co/140x40?text=CivicEye'">
   </div>
 
-  <!-- مودال عرض الصور -->
   <div id="imageModal" class="modal">
     <span class="close-modal">&times;</span>
     <img class="modal-content" id="modalImage">
@@ -363,7 +358,6 @@
        <a href="#">لوحة المتابعة</a>
      </div> 
      
-     <!-- قسم التبليغات الخاص بمصلحة الطرقات مع إدارة الحالات -->
      <div class="notifications-section">
         <div class="section-title">
              تبليغات مصلحة الطرقات
@@ -375,11 +369,9 @@
   </div>
 </div>
   <script>
-    // ======================== الإعدادات والمتغيرات ========================
     const STORAGE_KEY = "civiceye_reports";
     const ROADS_STATUS_KEY = "roads_reports_status";
     
-    // دالة لتنسيق التاريخ والوقت
     function formatDateTime(timestamp) {
         if (!timestamp) return "غير محدد";
         const date = new Date(timestamp);
@@ -393,7 +385,6 @@
         });
     }
 
-    // تحميل خريطة الحالات المخزنة
     function loadStatusMap() {
         try {
             const stored = localStorage.getItem(ROADS_STATUS_KEY);
@@ -402,7 +393,6 @@
         return {};
     }
 
-    // حفظ حالة بلاغ معين
     function saveReportStatus(reportId, status) {
         const statusMap = loadStatusMap();
         statusMap[reportId] = status;
@@ -410,7 +400,6 @@
         window.dispatchEvent(new Event('roadsStatusChanged'));
     }
 
-    // جلب بلاغات الطرقات من localStorage
     function fetchRoadsReports() {
         let allReports = [];
         try {
@@ -450,7 +439,6 @@
         return formattedReports;
     }
     
-    // عرض الصورة في المودال
     function showImageModal(imageSrc) {
         const modal = document.getElementById('imageModal');
         const modalImg = document.getElementById('modalImage');
@@ -460,7 +448,6 @@
         }
     }
     
-    // تنقية النصوص
     function escapeHtml(str) {
         if (!str) return '';
         return String(str).replace(/[&<>]/g, function(m) {
@@ -471,20 +458,20 @@
         });
     }
     
-    // تحديد لون النقطة والنص حسب الحالة
     function getStatusDotAndText(statusValue) {
         switch (statusValue) {
             case 'تم الحل':
                 return { dotClass: 'green', text: 'تم الحل' };
             case 'قيد المعالجة':
                 return { dotClass: 'blue', text: 'قيد المعالجة' };
+            case 'مرفوض':
+                return { dotClass: 'red', text: 'مرفوض' };
             case 'قيد الدراسة':
             default:
                 return { dotClass: 'yellow', text: 'قيد الدراسة' };
         }
     }
     
-    // عرض التبليغات (بدون وسوم "جديد")
     function renderRoadsNotifications() {
         const container = document.getElementById('roadsReportsContainer');
         if (!container) return;
@@ -506,7 +493,6 @@
         reports.forEach((report, index) => {
             const reportNumber = index + 1;
             
-            // رابط خرائط جوجل
             let mapsLink = '#';
             let locationValid = false;
             if (report.location && report.location.lat && report.location.lng) {
@@ -514,7 +500,6 @@
                 locationValid = true;
             }
             
-            // معرض الصور
             let imagesHtml = '';
             if (report.images && Array.isArray(report.images) && report.images.length > 0) {
                 imagesHtml = '<div class="report-images">';
@@ -548,6 +533,7 @@
                             <option value="قيد الدراسة" ${currentStatus === 'قيد الدراسة' ? 'selected' : ''}>قيد الدراسة</option>
                             <option value="قيد المعالجة" ${currentStatus === 'قيد المعالجة' ? 'selected' : ''}>قيد المعالجة</option>
                             <option value="تم الحل" ${currentStatus === 'تم الحل' ? 'selected' : ''}>تم الحل</option>
+                            <option value="مرفوض" ${currentStatus === 'مرفوض' ? 'selected' : ''}>مرفوض</option>
                         </select>
                     </div>
                 </div>
@@ -569,14 +555,13 @@
                 </div>
                 ${imagesHtml}
                 <div style="display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 12px;">
-                    ${locationValid ? `<a href="${mapsLink}" target="_blank" class="report-location">📍 عرض الموقع على خرائط جوجل</a>` : '<span class="report-location" style="background:#e2e8f0; cursor:default;">📍 الموقع غير متوفر</span>'}
+                    ${locationValid ? `<a href="${mapsLink}" target="_blank" class="report-location"> عرض الموقع على خرائط جوجل</a>` : '<span class="report-location" style="background:#e2e8f0; cursor:default;"> الموقع غير متوفر</span>'}
                 </div>
                 ${userAndStatusHtml}
             `;
             
             container.appendChild(reportDiv);
             
-            // أحداث الصور
             const imagesInCard = reportDiv.querySelectorAll('.report-image');
             imagesInCard.forEach(img => {
                 img.addEventListener('click', (e) => {
@@ -585,7 +570,6 @@
                 });
             });
             
-            // حدث تغيير الحالة
             const statusSelect = reportDiv.querySelector('.status-select');
             if (statusSelect) {
                 statusSelect.addEventListener('change', (event) => {
@@ -605,7 +589,6 @@
         });
     }
     
-    // إعداد المودال
     function setupModal() {
         const modal = document.getElementById('imageModal');
         const closeBtn = document.querySelector('.close-modal');
@@ -624,14 +607,12 @@
         });
     }
     
-    // تحديث تلقائي
     let refreshInterval = null;
     function startAutoRefresh() {
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = setInterval(() => renderRoadsNotifications(), 4000);
     }
     
-    // الاستماع للتغييرات
     function listenToStorageChanges() {
         window.addEventListener('storage', (event) => {
             if (event.key === STORAGE_KEY || event.key === ROADS_STATUS_KEY) {
@@ -641,7 +622,6 @@
         window.addEventListener('roadsStatusChanged', () => renderRoadsNotifications());
     }
     
-    // بدء التشغيل
     function init() {
         setupModal();
         renderRoadsNotifications();
