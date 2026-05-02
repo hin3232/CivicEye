@@ -32,7 +32,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // تحديد العناصر
         const signupForm = document.getElementById('signupForm');
         const lastName = document.querySelector('input[name="lastName"]');
         const firstName = document.querySelector('input[name="firstName"]');
@@ -41,13 +40,10 @@
         const password = document.querySelector('input[name="password"]');
         const submitButton = document.querySelector('.creat-btn-page');
 
-        // دالة عرض رسائل الخطأ
         function showError(message) {
-            // حذف الرسالة القديمة
             const oldError = document.querySelector('.error-message');
             if (oldError) oldError.remove();
             
-            // إنشاء رسالة خطأ جديدة
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error-message';
             errorDiv.style.color = 'red';
@@ -58,14 +54,12 @@
             errorDiv.style.textAlign = 'center';
             errorDiv.textContent = message;
             
-            // إضافة الرسالة إلى الصفحة
             const creat = document.querySelector('.creatdiv');
             if (creat) {
                 creat.appendChild(errorDiv);
             }
         }
         
-        // دالة عرض رسائل النجاح
         function showSuccess(message) {
             const oldSuccess = document.querySelector('.success-message');
             if (oldSuccess) oldSuccess.remove();
@@ -86,7 +80,6 @@
             }
         }
         
-        // دالة التحكم بحالة التحميل
         function setLoading(isLoading) {
             if (!submitButton) return;
             
@@ -101,19 +94,16 @@
             }
         }
         
-        // التحقق من صحة البريد الإلكتروني
         function isValidEmail(email) {
             const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
             return emailRegex.test(email);
         }
         
-        // التحقق من صحة رقم الهاتف (جزائري)
         function isValidPhone(phone) {
             const phoneRegex = /^(05|06|07)[0-9]{8}$/;
             return phoneRegex.test(phone);
         }
         
-        // التحقق من صحة تاريخ الميلاد (يجب أن يكون المستخدم أكبر من 13 سنة)
         function isValidAge(birthDateValue) {
             if (!birthDateValue) return false;
             
@@ -129,48 +119,39 @@
             return age >= 13;
         }
         
-        // التحقق من قوة كلمة المرور (8 أحرف + حرف كبير + رقم)
         function isStrongPassword(password) {
             const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
             return passwordRegex.test(password);
         }
         
-        // دالة التحقق من وجود مستخدم بنفس البريد أو الهاتف
         function isUserExists(identifier) {
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             return users.some(user => user.identifier === identifier);
         }
         
-        // دالة حفظ المستخدم الجديد
         function saveUser(userData) {
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             users.push(userData);
             localStorage.setItem('users', JSON.stringify(users));
-            
-            // حفظ المستخدم الحالي لجلسة العمل
             localStorage.setItem('currentUser', JSON.stringify(userData));
         }
         
-        // معالجة إرسال النموذج
         if (signupForm) {
             signupForm.addEventListener('submit', function(event) {
                 event.preventDefault();
                 
-                // إزالة الرسائل القديمة
                 const oldError = document.querySelector('.error-message');
                 if (oldError) oldError.remove();
                 
                 const oldSuccess = document.querySelector('.success-message');
                 if (oldSuccess) oldSuccess.remove();
                 
-                // جلب القيم
                 const lastNameValue = lastName ? lastName.value.trim() : '';
                 const firstNameValue = firstName ? firstName.value.trim() : '';
                 const birthDateValue = birthDate ? birthDate.value : '';
                 const emailValue = email ? email.value.trim() : '';
                 const passwordValue = password ? password.value : '';
                 
-                // 1. التحقق من اسم العائلة
                 if (!lastNameValue) {
                     showError('الرجاء إدخال اسم العائلة');
                     return;
@@ -181,7 +162,6 @@
                     return;
                 }
                 
-                // 2. التحقق من الاسم الأول
                 if (!firstNameValue) {
                     showError('الرجاء إدخال الاسم الأول');
                     return;
@@ -192,7 +172,6 @@
                     return;
                 }
                 
-                // 3. التحقق من تاريخ الميلاد
                 if (!birthDateValue) {
                     showError('الرجاء إدخال تاريخ الميلاد');
                     return;
@@ -203,13 +182,11 @@
                     return;
                 }
                 
-                // 4. التحقق من البريد الإلكتروني أو رقم الهاتف
                 if (!emailValue) {
                     showError('الرجاء إدخال رقم الهاتف أو البريد الإلكتروني');
                     return;
                 }
                 
-                // التحقق مما إذا كان المدخل بريداً إلكترونياً أم رقم هاتف
                 const isEmail = emailValue.includes('@');
                 let isValid = false;
                 
@@ -227,13 +204,11 @@
                     }
                 }
                 
-                // التحقق من عدم وجود المستخدم مسبقاً
                 if (isUserExists(emailValue)) {
                     showError('هذا البريد الإلكتروني أو رقم الهاتف مسجل مسبقاً');
                     return;
                 }
                 
-                // 5. التحقق من كلمة المرور
                 if (!passwordValue) {
                     showError('الرجاء إدخال كلمة المرور');
                     return;
@@ -249,10 +224,8 @@
                     return;
                 }
                 
-                // إذا وصلنا لهنا، جميع البيانات صحيحة
                 setLoading(true);
                 
-                // إنشاء كائن المستخدم
                 const newUser = {
                     identifier: emailValue,
                     password: passwordValue,
@@ -264,20 +237,16 @@
                     profileImage: 'imags/user.png'
                 };
                 
-                // حفظ المستخدم في localStorage
                 saveUser(newUser);
                 
-                // عرض رسالة النجاح
                 showSuccess('تم إنشاء الحساب بنجاح! جاري التوجيه إلى الصفحة الرئيسية...');
                 
-                // التوجيه إلى الصفحة الرئيسية بعد 2 ثانية
                 setTimeout(function() {
                     window.location.href = 'home.html';
                 }, 2000);
             });
         }
         
-        // تحسينات إضافية: إخفاء رسائل الخطأ عند الكتابة
         const allInputs = [lastName, firstName, birthDate, email, password];
         
         allInputs.forEach(input => {
@@ -291,13 +260,10 @@
             }
         });
         
-        // تحسين إضافي: تنسيق رقم الهاتف أثناء الكتابة
         if (email) {
             email.addEventListener('input', function() {
                 let value = this.value.replace(/[\s-]/g, '');
-                // إذا كان الرقم يبدو كرقم هاتف (يبدأ بـ 05 أو 06 أو 07)
                 if (value.match(/^(05|06|07)[0-9]{0,8}$/)) {
-                    // تنسيق الرقم: 05 123 45 67
                     if (value.length >= 3) {
                         value = value.slice(0, 3) + ' ' + value.slice(3);
                     }
@@ -315,106 +281,4 @@
     });
 </script>
 </body>
-</html><!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>CivicEye</title>
-<style>
-.body{
-   background-color: #fff;
-}
-.creatbtn{
-    background-color: rgba(114, 144, 174, 0.3);
-    top: 15%;
-    right: 38.5%;
-    position: absolute;
-    width:350px;
-    height: 400px;
-    border-radius: 5px;
-    padding-top: 5px;
-}
-.text{
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-top: 0px;
-   
-}
-.input-field{
- width: 60%;
- height: 20px;
- margin-top: 2px;
- margin-bottom: 10px;
- margin-right: 25px;
- padding: 10px;
- border: none;
- background-color: rgba(114, 144, 174, 0.3);
- border-radius: 5px;
- color: #fff;
-
-}
-.input-field:hover{
-     background-color: rgba(114, 144, 174, 0.4);
-}
-::placeholder{
-    font-size: medium;
-    color: #fff;
-    padding-right: 15px;
-        
-}
-
-h5{
-    color:#fff;
-    margin-top: 3px;
-    margin-right: 13px;
-    margin-bottom: 3px;
-}
-p{
-  color: #fff;
-  font-size: 13px;
-  margin-right: 13px;
-  margin-top: 0%; 
-  margin-bottom: 0%;   
-}
-.creat-btn{
-    width:100px;
-    height: 28px;
-    background-color: #3e61ff;
-    border: none;
-    border-radius: 5px;
-    color: #fff;
-    margin-top: 5px;
-    margin-right:120px;
-
-}
-.creat-btn:hover{
-    background-color: #5e7cff;
-}
-</style>
-</head>
-<body >
-<div class="creatbtn">
-<div class="text" style=" font-size: 23px;">انشاء حساب</div>
-<div class="text"style=" font-size: 15px;color: rgba(255, 255, 255, 0.546);">الامر سهل و بسيط </div>
-<hr style="height:2px;width:100%;border: #fff ;background-color: #fff;">
-<div>
-    <input type="text"class="input-field" placeholder="اسم العائلة " dir="rtl">
-    <input type="text" class="input-field" placeholder="اسم الاول" dir="rtl">
-    <h5>تاريخ الميلاد</h5>
-    <div >
-        <input type="date"class="input-field" >
-        <input type="email" type="tel" class="input-field"placeholder="رقم الهاتف او البريد الالكتروني">
-        <input type="password" class="input-field"placeholder="كلمة السر">
-        <p>قد تتلقى اشعارات عبر رسائل نصية قصيرة هنا لاثبات هويتك </p>
-        <button class="creat-btn"><a href="home.html" style="color: #fff;text-decoration: none;">تسجيل الدخول</a></button>
-
-    </div>
-</div>
-
-</div>
-</body>    
 </html>
