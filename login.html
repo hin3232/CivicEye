@@ -6,15 +6,22 @@
     <title>CivicEye - تسجيل الدخول</title>
     <style>
         body{
-            background-image:url(imags/1.png);
-            background-size:100%100%;
-            background-repeat: no-repeat;
-            background-position: center;
-            height: 100vh;
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
-        }
+        background-image:url(imags/1.png);
+        background-size:100% 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        height: 100vh;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+        
+      
+       .logo-img {
+        max-width: 500px; 
+        height: 100px;
+    }
+       
     </style> 
 </head>
 <body>
@@ -30,7 +37,8 @@
     </div> 
 </div>
 <div class="text">
-    <h1><span style="color: #404243">Civic</span><span style="color: #042650">Eye</span></h1>
+
+    <img src="imags/Frame 1.svg" alt="CivicEye Logo" class="logo-img">
 </div>
 <div class="text2">
     <p><span style="color: #6b6767;font-size: 30px">منصة تتيح لك التبليغ عن مشاكل بكل سهولة<br> 
@@ -39,7 +47,10 @@
 <div class="rectangle"></div>
 
 <script>
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('الصفحة تحملت بنجاح');
+
     const loginForm = document.getElementById('loginForm');
     const emailInput = document.querySelector('input[name="login_identifier"]');
     const passwordInput = document.querySelector('input[name="login_password"]');
@@ -135,12 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const identifierValue = emailInput ? emailInput.value.trim() : '';
             const passwordValue = passwordInput ? passwordInput.value : '';
-            
-            const oldError = document.querySelector('.error-message');
-            if (oldError) oldError.remove();
-            
-            const oldSuccess = document.querySelector('.success-message');
-            if (oldSuccess) oldSuccess.remove();
             
             if (!identifierValue) {
                 showError('الرجاء إدخال رقم الهاتف أو البريد الإلكتروني');
