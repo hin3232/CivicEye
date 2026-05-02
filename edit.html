@@ -33,9 +33,7 @@
         .edit-square {
             position: relative;
         }
-        /* تنسيق الحقل المقفل */
         .edit-input:disabled {
-           
             color: #6c757d;
             cursor: not-allowed;
             opacity: 0.7;
@@ -71,15 +69,11 @@
     <input type="text" class="edit-input" id="aboutInput" style="top:260px;" placeholder="اكتب نبذة عن نفسك..." dir="rtl">
 
     <button class="edit-button" id="saveButton">تغيير</button>
-    
-    
 </div>
 
 <script>
-// متغير لتخزين المستخدم الحالي
 let currentUser = null;
 
-// تحميل الصورة
 function loadImage(event) {
     const image = document.getElementById('profileImage');
     const file = event.target.files[0];
@@ -87,7 +81,6 @@ function loadImage(event) {
         const reader = new FileReader();
         reader.onload = function(e) {
             image.src = e.target.result;
-            // حفظ الصورة في localStorage
             if (currentUser) {
                 currentUser.profileImage = e.target.result;
                 saveUserToLocalStorage(currentUser);
@@ -98,9 +91,7 @@ function loadImage(event) {
     }
 }
 
-// عرض رسائل الخطأ أو النجاح
 function showMessage(message, type) {
-    // إزالة الرسائل القديمة
     const oldMsg = document.querySelector('.error-message');
     if (oldMsg) oldMsg.remove();
     const oldSuccess = document.querySelector('.success-message');
@@ -113,7 +104,6 @@ function showMessage(message, type) {
     const editSquare = document.querySelector('.edit-square');
     editSquare.appendChild(msgDiv);
     
-    // إخفاء الرسالة بعد 3 ثواني
     setTimeout(() => {
         if (msgDiv && msgDiv.parentNode) {
             msgDiv.remove();
@@ -121,7 +111,6 @@ function showMessage(message, type) {
     }, 3000);
 }
 
-// حفظ المستخدم في localStorage وتحديث currentUser
 function saveUserToLocalStorage(updatedUser) {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const userIndex = users.findIndex(u => u.identifier === updatedUser.identifier);
@@ -134,25 +123,21 @@ function saveUserToLocalStorage(updatedUser) {
     }
 }
 
-// التحقق من صحة البريد الإلكتروني
 function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
     return emailRegex.test(email);
 }
 
-// التحقق من صحة رقم الهاتف 
 function isValidPhone(phone) {
     const phoneRegex = /^(05|06|07)[0-9]{8}$/;
     return phoneRegex.test(phone);
 }
 
-// التحقق من عدم وجود مستخدم آخر بنفس المعرف
 function isIdentifierTaken(identifier, currentIdentifier) {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     return users.some(user => user.identifier === identifier && user.identifier !== currentIdentifier);
 }
 
-// تحميل بيانات المستخدم الحالية
 function loadUserData() {
     const storedUser = localStorage.getItem('currentUser');
     if (!storedUser) {
@@ -162,36 +147,29 @@ function loadUserData() {
     
     currentUser = JSON.parse(storedUser);
     
-    // عرض اسم المستخدم الكامل في حقل الإدخال
     const fullName = `${currentUser.firstName} ${currentUser.lastName}`;
     document.getElementById('usernameInput').value = fullName;
     
-    // عرض البريد الإلكتروني/رقم الهاتف (الحقل مقفل ولا يمكن تغييره)
     document.getElementById('emailInput').value = currentUser.identifier;
     
-    // عرض النبذة إذا كانت موجودة
     if (currentUser.about) {
         document.getElementById('aboutInput').value = currentUser.about;
     }
     
-    // عرض الصورة الشخصية
     if (currentUser.profileImage && currentUser.profileImage !== 'imags/user.png') {
         document.getElementById('profileImage').src = currentUser.profileImage;
     }
 }
 
-// حفظ التغييرات (بدون تغيير البريد الإلكتروني/رقم الهاتف)
 function saveChanges() {
     const usernameValue = document.getElementById('usernameInput').value.trim();
     const aboutValue = document.getElementById('aboutInput').value.trim();
     
-    // التحقق من اسم المستخدم
     if (!usernameValue) {
         showMessage('الرجاء إدخال اسم المستخدم', 'error');
         return;
     }
     
-    // تقسيم اسم المستخدم إلى اسم أول واسم عائلة
     const nameParts = usernameValue.split(' ');
     let firstName = nameParts[0] || '';
     let lastName = nameParts.slice(1).join(' ') || '';
@@ -201,22 +179,18 @@ function saveChanges() {
         return;
     }
     
-    // تحديث بيانات المستخدم (مع الاحتفاظ بنفس المعرف)
     const updatedUser = {
         ...currentUser,
         firstName: firstName,
         lastName: lastName,
         about: aboutValue
-        // ملاحظة: لم يتم تغيير identifier (البريد الإلكتروني/رقم الهاتف)
     };
     
-    // حفظ التغييرات
     saveUserToLocalStorage(updatedUser);
     
     showMessage('تم تحديث المعلومات بنجاح', 'success');
 }
 
-// عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
     loadUserData();
     
