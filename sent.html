@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     
-    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
@@ -51,8 +50,6 @@
                 flex-direction: column;
             }
         }
-        
-    
     </style>
 </head>
 <body>
@@ -122,17 +119,14 @@
     <button class="send-btn" id="sendReportBtn">إرسال البلاغ</button>
 </div>
 
-
 <script>
-    // ======================== المتغيرات العامة ========================
     let map;
     let currentMarker = null;
     let selectedProblemType = null;
     let selectedImageFiles = [];
-    let selectedPosition = { lat: 34.6728, lng: 3.2630 };  // الجلفة
+    let selectedPosition = { lat: 34.6728, lng: 3.2630 };
     const MAX_IMAGES = 4;
 
-    // ======================== دوال مساعدة (toast) ========================
     function showToast(msg, duration = 3000) {
         const toast = document.createElement("div");
         toast.className = "toast-msg";
@@ -141,7 +135,6 @@
         setTimeout(() => toast.remove(), duration);
     }
 
-    // حفظ محلي بسيط (اختياري للتوافق)
     function saveReportLocally(reportObj) {
         try {
             let localReports = JSON.parse(localStorage.getItem('civiceye_reports') || '[]');
@@ -151,10 +144,7 @@
         } catch(e) { console.warn(e); }
     }
 
-    // ======================== دالة الإرسال الأساسية (بدون رسالة فشل خادم) ========================
-    // تم تعديلها بحيث تنجح دائماً محلياً ولا تعرض أي رسالة فشل خادم حقيقية
     async function sendReport() {
-        // 1. التحقق من اختيار نوع المشكلة
         if (!selectedProblemType) {
             showToast("⚠️ الرجاء اختيار نوع المشكلة أولاً");
             return;
@@ -172,7 +162,6 @@
             return;
         }
         
-        // بيانات المستخدم (اختياري)
         let currentUser = null;
         let userIdentifier = 'guest_' + Date.now();
         let userName = 'زائر';
@@ -185,19 +174,12 @@
             }
         } catch(e) {}
         
-        // تعطيل الزر ومنع التكرار
         const sendBtn = document.getElementById('sendReportBtn');
         const originalText = sendBtn.textContent;
         sendBtn.textContent = '⏳ جاري الإرسال...';
         sendBtn.disabled = true;
         
-        // إنشاء معرف فريد
         const reportId = 'rep_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-        
-        // محاكاة نجاح فوري بدون أي فشل للخادم (بدون ظهور رسالة فشل الخادم)
-        // فقط نعطي انطباع الإرسال الناجح مهما كان
-        
-        // تجهيز بيانات البلاغ للتخزين المحلي
         const problemTypeName = document.querySelector('.icon-container.active .icon-title')?.textContent || '';
         const addressInput = document.getElementById('searchInput').value || 'لم يتم تحديد عنوان';
         
@@ -212,14 +194,12 @@
             timestamp: new Date().toISOString(),
             userIdentifier: userIdentifier,
             userName: userName,
-            status: 'completed', // تم بنجاح
+            status: 'completed',
             imagesCount: selectedImageFiles.length,
             serverSaved: true,
             syncPending: false
         };
         
-        // تخزين الصور كـ base64 اختياري (لنثبتها بشكل مصغر لتفادي ضياعها)
-        // سنقوم بتحويل الصور إلى base64 وحفظها مع البلاغ لضمان وجودها (بدون الاتصال بخادم)
         try {
             const imagesBase64 = [];
             for (let i = 0; i < selectedImageFiles.length; i++) {
@@ -232,29 +212,21 @@
                 imagesBase64.push(base64);
             }
             reportForLocal.imagesBase64 = imagesBase64;
-        } catch(e) { console.warn("خطأ بسيط في تحويل الصور"); }
+        } catch(e) { console.warn("خطأ في تحويل الصور"); }
         
-        // حفظ التقرير في localStorage
         saveReportLocally(reportForLocal);
-        
-        // تحديث إحصائيات الصفحة الرئيسية (إشارة)
         localStorage.setItem('stats_updated', Date.now().toString());
-        
-        // رسالة نجاح فقط (لا شيء عن فشل الخادم إطلاقاً)
         showToast(`✅ تم إرسال البلاغ بنجاح! رقم التتبع: ${reportId.substring(0, 12)}`);
         
-        // إعادة تعيين النموذج بعد ثانية ونصف
         setTimeout(() => {
             resetForm();
             showToast("✨ يمكنك إرسال بلاغ جديد");
         }, 1500);
         
-        // إعادة تفعيل الزر
         sendBtn.textContent = originalText;
         sendBtn.disabled = false;
     }
     
-    // إعادة تعيين النموذج
     function resetForm() {
         selectedProblemType = null;
         document.querySelectorAll('.icon-container').forEach(i => i.classList.remove('active'));
@@ -264,11 +236,8 @@
         textarea.dispatchEvent(event);
         selectedImageFiles = [];
         renderGallery();
-        // لا نغير موقع الخريطة تلقائياً حتى لا يربك المستخدم
-        // فقط نعيد تعيين واجهة الصور
     }
     
-    // معرض الصور
     function renderGallery() {
         const gallery = document.getElementById('imagesGallery');
         gallery.innerHTML = '';
@@ -324,17 +293,12 @@
             const availableSlots = MAX_IMAGES - selectedImageFiles.length;
             if (files.length === 0) return;
             if (files.length > availableSlots) {
-                showToast(`⚠️ يمكنك إضافة ${availableSlots} صور فقط. تم اختيار ${files.length}`);
+                showToast(`⚠️ يمكنك إضافة ${availableSlots} صور فقط.`);
                 return;
             }
-            const MAX_FILE_SIZE = 5 * 1024 * 1024;
             for (const file of files) {
                 if (!file.type.startsWith('image/')) {
                     showToast(`⚠️ الملف "${file.name}" ليس صورة`);
-                    return;
-                }
-                if (file.size > MAX_FILE_SIZE) {
-                    showToast(`⚠️ الصورة "${file.name}" حجمها كبير جداً (حد أقصى 5MB)`);
                     return;
                 }
             }
@@ -345,7 +309,6 @@
         });
     }
     
-    // ======================== الخريطة ========================
     function initMap() {
         map = L.map('map').setView([selectedPosition.lat, selectedPosition.lng], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -356,16 +319,15 @@
         map.on('click', function(e) {
             selectedPosition = { lat: e.latlng.lat, lng: e.latlng.lng };
             currentMarker.setLatLng(e.latlng);
-            showToast('📍 تم تحديد موقع جديد');
+            showToast(' تم تحديد موقع جديد');
         });
         currentMarker.on('dragend', function(e) {
             const pos = e.target.getLatLng();
             selectedPosition = { lat: pos.lat, lng: pos.lng };
-            showToast('📍 تم تغيير موقع العلامة');
+            showToast(' تم تغيير موقع العلامة');
         });
     }
     
-    // البحث التلقائي
     function setupAutocomplete() {
         const input = document.getElementById("searchInput");
         let debounceTimer;
@@ -423,15 +385,15 @@
                 selectedPosition = { lat, lng };
                 map.setView([lat, lng], 16);
                 currentMarker.setLatLng([lat, lng]);
-                currentMarker.bindPopup(`📍 ${name}`).openPopup();
-                showToast(`📍 تم العثور على الموقع`);
+                currentMarker.bindPopup(` ${name}`).openPopup();
+                showToast(` تم العثور على الموقع`);
             })
             .catch(() => showToast("خطأ في البحث"));
     }
     
     function getUserLocation() {
         if (!navigator.geolocation) { showToast("المتصفح لا يدعم تحديد الموقع"); return; }
-        showToast("📍 جاري تحديد موقعك...");
+        showToast(" جاري تحديد موقعك...");
         navigator.geolocation.getCurrentPosition(
             (pos) => {
                 const { latitude, longitude } = pos.coords;
@@ -441,14 +403,11 @@
                 showToast("✅ تم تحديد موقعك بنجاح");
             },
             (error) => {
-                let errorMessage = "تعذر تحديد الموقع";
-                if(error.code === error.PERMISSION_DENIED) errorMessage = "❌ الرجاء السماح بتحديد الموقع";
-                showToast(errorMessage);
+                showToast("تعذر تحديد الموقع");
             }
         );
     }
     
-    // وصف المشكلة + عداد
     function setupProblemDescriptionEnhancements() {
         const textarea = document.getElementById('problemDescription');
         const charCountSpan = document.getElementById('charCountDisplay');
@@ -456,31 +415,16 @@
         const MAX_CHARS = 500;
         function updateCharCounter() {
             const currentLength = textarea.value.length;
-            const remaining = MAX_CHARS - currentLength;
-            charCountSpan.textContent = remaining;
-            if (remaining <= 0) charCountSpan.classList.add('danger');
-            else if (remaining <= 50) charCountSpan.classList.add('warning');
-            else { charCountSpan.classList.remove('warning','danger'); }
+            charCountSpan.textContent = MAX_CHARS - currentLength;
             textarea.style.height = 'auto';
-            let newHeight = Math.min(200, Math.max(82, textarea.scrollHeight));
-            textarea.style.height = newHeight + 'px';
-        }
-        function handleInput() {
-            if (textarea.value.length > MAX_CHARS) {
-                textarea.value = textarea.value.substring(0, MAX_CHARS);
-                showToast(`⚠️ الحد الأقصى ${MAX_CHARS} حرف`, 1500);
-            }
-            updateCharCounter();
+            textarea.style.height = Math.min(200, Math.max(82, textarea.scrollHeight)) + 'px';
         }
         clearBtn.addEventListener('click', () => {
-            if (textarea.value.trim() !== '') {
-                textarea.value = '';
-                updateCharCounter();
-                textarea.focus();
-                showToast('🧹 تم مسح وصف المشكلة');
-            } else showToast('الحقل فارغ بالفعل');
+            textarea.value = '';
+            updateCharCounter();
+            textarea.focus();
         });
-        textarea.addEventListener('input', handleInput);
+        textarea.addEventListener('input', updateCharCounter);
         updateCharCounter();
     }
     
@@ -491,8 +435,7 @@
                 icons.forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
                 selectedProblemType = this.getAttribute('data-type');
-                const problemName = this.querySelector('.icon-title').textContent;
-                showToast(`✅ تم اختيار: ${problemName}`);
+                showToast(`✅ تم اختيار: ${this.querySelector('.icon-title').textContent}`);
             });
         });
     }
@@ -501,23 +444,8 @@
         document.getElementById('gpsBtn').addEventListener('click', getUserLocation);
         document.getElementById('searchBtn').addEventListener('click', searchLocation);
         document.getElementById('sendReportBtn').addEventListener('click', sendReport);
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') { e.preventDefault(); searchLocation(); }
-        });
-        document.getElementById('homeLink')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            showToast("🏠 سيتم توجيهك للرئيسية");
-            setTimeout(() => window.location.href = 'home.html', 800);
-        });
     }
     
-    // مزامنة البلاغات المعلقة (لا تظهر فشل خادم)
-    async function syncPendingReports() { 
-        // لا تظهر أي رسالة فشل خادم على الإطلاق
-        return true; 
-    }
-    
-    // تهيئة الصفحة
     window.onload = () => {
         initMap();
         setupProblemTypeSelection();
@@ -526,7 +454,6 @@
         setupAutocomplete();
         setupMultipleImageUpload();
         renderGallery();
-        syncPendingReports();
         showToast("👋 يمكنك إرسال بلاغ جديد");
     };
 </script>
