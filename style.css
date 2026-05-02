@@ -1,12 +1,4 @@
-/* ملف CSS موحد لجميع صفحات تطبيق CivicEye */
-
-/* ===== reset and base styles ===== */
-
-
-/* ===== أنماط صفحة login.html ===== */
-
-
- .overlay{
+.overlay{
             position: absolute;
             top: 0;
             left: 0;
@@ -107,7 +99,6 @@
             margin: 5px auto;
         }
 
-/* ===== أنماط صفحة creat.html ===== */
 .creat-body {
     background-color: #fff;
 }
@@ -184,7 +175,6 @@
     background-color: #5e7cff;
 }
 
-/* ===== أنماط صفحة home.html ===== */
 .home-square {
     width: 320px;
     margin-right: 35%;
@@ -192,7 +182,6 @@
     
 }
 
-   /* تنسيق الصورة الدائرية */
         .user {
             width: 70px;
             height: 70px;
@@ -307,7 +296,7 @@
 .pie-2 {
     background: conic-gradient(#2ecc71 0% 53%, #e0e0e0 53% 100%);
 }
-        /* تنسيق رسالة التحديث */
+        
         .update-toast {
             position: fixed;
             bottom: 20px;
@@ -372,7 +361,6 @@
     background-color: #2980b9;
 }
 
-/* ===== أنماط صفحة edit.html ===== */
 .edit-square {
     width: 350px;
     height: 400px;
@@ -456,12 +444,13 @@
     background-color: #0a016c;
 }
 
-/* ===== أنماط صفحة sent.html ===== */
 
  .logo {
             width: 100%;
             float: left;
             margin-left: 20px;
+            padding-top: 0px;
+    
         }
         .page-link {
             color: #fff;
@@ -858,7 +847,6 @@
     color: #000;
 }
 
-/* ===== أنماط إضافية للصفحات ===== */
 .page-separator {
     right: 15.5%;
 }
@@ -870,7 +858,7 @@
 }
 
 .page-edit {
-    right: 15%;
+    right: 17%;
     font-size: 25px;
     top: 3%;
 }
